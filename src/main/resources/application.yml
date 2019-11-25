@@ -1,0 +1,62 @@
+server:
+  port: 8087
+
+rest:
+  security:
+    enabled: true
+    issuer-uri: https://keycloak.dev.affinionservices.com/auth/realms/internal
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${rest.security.issuer-uri}
+          jwk-set-uri: ${rest.security.issuer-uri}/protocol/openid-connect/certs
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            client-name: svc_member_alert
+            client-id: svc_member_alert
+            client-secret: bd46b5b2-d50e-4522-a5e7-40e7e89d38e6
+            authorization-grant-type: client_credentials
+            scope:
+              - openid
+        provider:
+          keycloak:
+            token-uri: ${rest.security.issuer-uri}/protocol/openid-connect/token
+            user-info-uri: ${rest.security.issuer-uri}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${rest.security.issuer-uri}/protocol/openid-connect/certs
+            authorization-uri: ${rest.security.issuer-uri}/protocol/openid-connect/auth
+            user-name-attribute: preferred_username
+  application:
+    name: alert_service
+  cloud:
+    config:
+      enabled: false
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    user: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/postgres
+    table: alerts_schema_history
+    schemas:
+      - public
+  profiles:
+    active: prod
+
+security:
+  oauth2:
+    resource:
+      token-info-uri: ${rest.security.issuer-uri}/protocol/openid-connect/token/introspect
+      user-info-uri: ${rest.security.issuer-uri}/protocol/openid-connect/userinfo
+      jwt.key-value: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn7W0KazGxTsC9BYae/1ZwWATcd9uWOxS12mzSBYduDKEhKl6tvXCUI9Iw5SocNoFRlZYILFvr6nwLNTQmfo5EGJs+kCXVf2bYWOWmfbcUW5enJAoGtXgAXQ9WpRpn/SZxPtJ06aSVet5y+sSGmtDWqHnCqcOcLcLE1juSUHWXG93U4XXpPOY64GWlddtQXZy34XIhwfv69UuBn51PlAVXagB/C/CoPD7Tbr6otGwoFOuHD5Yu9wSX4ArJqBxQ64yoyD5tZA8wt8PWsBrDIhXjxdI/qNzQEm1CNo21lPhlbLGqzc+Xx3Ge52t0qejrodrgaQIH0bL6fCorCNF5ajLAQIDAQAB
+management:
+  endpoint:
+    configprops:
+      enabled: true

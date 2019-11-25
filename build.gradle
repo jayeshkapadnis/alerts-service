@@ -1,0 +1,112 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+buildscript {
+    ext {
+        springBootVersion = '2.1.2.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+
+plugins {
+    id "org.sonarqube" version "2.7"
+    id "org.owasp.dependencycheck" version "5.0.0"
+    id "jacoco"
+    id "java"
+    id 'org.unbroken-dome.test-sets' version '2.2.1'
+    id "org.flywaydb.flyway" version "6.0.8"
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'project-report'
+apply plugin: 'org.springframework.boot'
+apply plugin: "org.sonarqube"
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "jacoco"
+apply plugin: "org.unbroken-dome.test-sets"
+apply plugin: "org.flywaydb.flyway"
+//https://flywaydb.org/documentation/gradle/
+
+group 'com.affinion.gce'
+version '1.0-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url "https://plugins.gradle.org/m2/" }
+    maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/' }
+    //maven { url 'http://10.222.109.183:8081/nexus/repository/h2ng'}
+}
+
+ext {
+    set('springCloudVersion', 'Greenwich.RELEASE')
+    set('databaseUrl', 'postgresql://localhost:5432/postgres')
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.2.RELEASE')
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.projectlombok:lombok:1.18.4'
+    annotationProcessor 'org.projectlombok:lombok:1.18.4'
+    compile 'io.r2dbc:r2dbc-postgresql:1.0.0.M6'
+    implementation 'io.projectreactor.netty:reactor-netty'
+    implementation 'org.postgresql:postgresql'
+    compile('org.springframework.security:spring-security-oauth2-jose')
+    compile('org.springframework.security:spring-security-oauth2-client')
+    compile('org.springframework.security:spring-security-oauth2-resource-server')
+
+
+    implementation 'io.springfox:springfox-swagger-ui:3.0.0-SNAPSHOT'
+    implementation 'io.springfox:springfox-swagger2:3.0.0-SNAPSHOT'
+    implementation 'io.springfox:springfox-spring-webflux:3.0.0-SNAPSHOT'
+    //implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-security'
+
+    compile group: 'org.codehaus.janino', name: 'janino', version: '3.1.0'
+    compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.1.7.RELEASE'
+    implementation group: 'org.springframework.boot.experimental', name: 'spring-boot-starter-data-r2dbc', version: '0.1.0.M1'
+    testCompile group: 'org.springframework.security', name: 'spring-security-test', version: '5.1.6.RELEASE'
+    compile group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.1.7.RELEASE'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: '2.16.0'
+    compile group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '6.2'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+testSets {
+    integrationTest { dirName = 'integration-test' }
+}
+
+flyway {
+    configFiles = ['flyway.conf']
+}
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+project.tasks["sonarqube"].dependsOn integrationTest
+project.tasks["sonarqube"].mustRunAfter integrationTest
+bootRun.dependsOn rootProject.tasks['flywayMigrate']
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "benifits-cybersecurity-alerts-service"
+        property "sonar.projectKey", "benifits-cybersecurity-alerts-service"
+        property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
+        property "sonar.exclusions", "**/*Generated.java,**/*Bean.java"
+    }
+}
