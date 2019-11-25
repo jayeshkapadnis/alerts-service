@@ -35,18 +35,9 @@ spring:
     config:
       enabled: false
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: postgres
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    user: postgres
-    password: postgres
-    url: jdbc:postgresql://localhost:5432/postgres
-    table: alerts_schema_history
-    schemas:
-      - public
+    url: r2dbc:postgresql://${POSTGRES_HOST:localhost}:5432/postgres
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
   profiles:
     active: prod
 
