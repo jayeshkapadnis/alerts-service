@@ -96,6 +96,14 @@ flyway {
     configFiles = ['flyway.conf']
 }
 
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+}
+
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 project.tasks["sonarqube"].dependsOn integrationTest
