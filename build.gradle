@@ -104,8 +104,8 @@ bootRun.dependsOn rootProject.tasks['flywayMigrate']
 
 sonarqube {
     properties {
-        property "sonar.projectName", "benifits-cybersecurity-alerts-service"
-        property "sonar.projectKey", "benifits-cybersecurity-alerts-service"
+        property "sonar.projectName", "alerts-service"
+        property "sonar.projectKey", "alerts-service"
         property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
         property "sonar.exclusions", "**/*Generated.java,**/*Bean.java"
     }
